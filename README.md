@@ -75,6 +75,15 @@ Watch the following video:
 
 [![https://youtu.be/cXnvoOS_-Wk](http://img.youtube.com/vi/cXnvoOS_-Wk/0.jpg)](https://youtu.be/cXnvoOS_-Wk "BIM 360 project setup tool - import users")
 
+## Extended Feature 5: Setup Cost Budget Segments
+ ```powershell
+Autodesk.BimProjectSetup.exe -pcs ".\sample\BIM360_CostSegments_Template.csv" -c "<YOUR-CLIENT-ID>" -s "<YOUR-CLIENT-SECRET>" -k "<YOUR-CALLBACK>" -a "<ACCOUNT-ID>" -b "https://developer.api.autodesk.com" -t ";" -z "," -e "UTF-8" -d "yyyy-MM-dd" -r false -h "project.admin@company.com"
+```
+Watch the following video:
+
+[![https://youtu.be/cXnvoOS_-Wk](http://img.youtube.com/vi/cXnvoOS_-Wk/0.jpg)](https://youtu.be/cXnvoOS_-Wk "BIM 360 project setup tool - cost segment setup")
+
+
 Note: These template files used in the scripts are just samples which are defined in the spreadsheet structure for you to reference, all required fields must be filled in order for the tool to work properly, please refer the [User Guide](BIM360-ProjectSetupTool-UsageGuide.pdf) for the details.
 
 
@@ -83,8 +92,10 @@ Note: These template files used in the scripts are just samples which are define
     - -p Path to CSV input file for project creation
     - -x Path to CSV input file for service activation
     - -u Path to CSV input file with project user information
+    - -pcs Path to CSV input file with cost budget code segment information
     - -c Forge client ID
     - -s Forge client secret
+    - -k Forge callback(Need to be same as in the Forge App)
     - -a BIM 360 Account ID
     - -b BaseUrl (default= "https://developer.api.autodesk.com")
     - -t Separator character (default = ';')

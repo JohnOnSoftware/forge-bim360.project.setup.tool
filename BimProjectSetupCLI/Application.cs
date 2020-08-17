@@ -21,6 +21,7 @@ using System;
 using System.Reflection;
 using BimProjectSetupCommon;
 using BimProjectSetupCommon.Workflow;
+using System.Threading;
 
 namespace Autodesk.BimProjectSetup
 {
@@ -34,6 +35,7 @@ namespace Autodesk.BimProjectSetup
         private ServiceWorkflow serviceProcess = null;
         private AccountWorkflow accountProcess = null;
         private ProjectUserWorkflow projectUserProcess = null;
+        private CostWorkflow costProcess = null;
 
         public Application(AppOptions options)
         {
@@ -49,6 +51,7 @@ namespace Autodesk.BimProjectSetup
                 serviceProcess = new ServiceWorkflow(options);
                 accountProcess = new AccountWorkflow(options);
                 projectUserProcess = new ProjectUserWorkflow(options);
+                costProcess = new CostWorkflow(options);
 
                 result = true;
             }
@@ -80,6 +83,16 @@ namespace Autodesk.BimProjectSetup
             {
                 projectUserProcess.AddProjectUsersFromCsvProcess();
             }
+            if( options.CostSegmentFilePath != null)
+            {
+                costProcess.initToken();
+                while (!CostWorkflow.TokenInitialized )
+                {
+                    Thread.Sleep(2000);
+                }
+                costProcess.prepareData();
+                costProcess.SetupCostTemplateFromCsvProcess();
+            }
         }
         internal static void PrintHelp()
         {
@@ -87,6 +100,7 @@ namespace Autodesk.BimProjectSetup
             Console.WriteLine("  -p        Path to CSV input file for project creation");
             Console.WriteLine("  -x        Path to CSV input file for service activation");
             Console.WriteLine("  -u        Path to CSV input file with project user information");
+            Console.WriteLine("  -pcs      Path to CSV input file with cost budget code segments information");
             Console.WriteLine("  -c        Forge client ID");
             Console.WriteLine("  -s        Forge client secret");
             Console.WriteLine("  -a        BIM 360 Account ID");
@@ -104,7 +118,7 @@ namespace Autodesk.BimProjectSetup
         }
         internal static void PrintHeader()
         {
-            Console.WriteLine($"Autodesk Consulting BIM 360 Project Setup Tool v{Assembly.GetExecutingAssembly().GetName().Version.ToString()}");
+            Console.WriteLine($"Autodesk Forge BIM 360 Project Setup Tool v{Assembly.GetExecutingAssembly().GetName().Version.ToString()}");
             Console.WriteLine("Copyright (c) 2018 Autodesk, Inc. All rights reserved.");
             Console.WriteLine("");
         }

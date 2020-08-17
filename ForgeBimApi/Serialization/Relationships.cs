@@ -58,6 +58,9 @@ namespace Autodesk.Forge.BIM360.Serialization
         [JsonProperty("hub")]
         public Hub hub { get; set; }
 
+        [JsonProperty("cost")]
+        public Cost cost { get; set; }
+
         [JsonProperty("storage")]
         public Storage storage { get; set; }
 

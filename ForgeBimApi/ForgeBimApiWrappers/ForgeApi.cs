@@ -122,9 +122,19 @@ namespace Autodesk.Forge.BIM360
             Urls["folders_folder_contents"] = "data/v1/projects/{ProjectId}/folders/{FolderId}/contents";
             Urls["hubs"] = "project/v1/hubs";
             Urls["hubs_hubId"] = "project/v1/hubs/{HubId}";
+            Urls["hubs_hubId_projects"] = "project/v1/hubs/{HubId}/projects";
+            Urls["hubs_hubId_projects_projectId"] = "project/v1/hubs/{HubId}/projects/{ProjectId}";
             Urls["hubs_topfolders"] = "project/v1/hubs/{HubId}/projects/{ProjectId}/topFolders";
             Urls["folder_permission"] = "bim360/docs/v1/projects/{ProjectId}/folders/{FolderId}/permissions";
             Urls["folder_permission_create"] = "bim360/docs/v1/projects/{ProjectId}/folders/{FolderId}/permissions:batch-create";
+            Urls["cost_templates"] = "cost/v1/containers/{ContainerId}/templates";
+            Urls["cost_segments"]  = "cost/v1/containers/{ContainerId}/templates/{TemplateId}/segments";
+            Urls["cost_segments_segmentId"] = "cost/v1/containers/{ContainerId}/templates/{TemplateId}/segments/{SegmentId}";
+            Urls["cost_segments_segmentId_values"] = "cost/v1/containers/{ContainerId}/templates/{TemplateId}/segments/{SegmentId}/values";
+            Urls["cost_segments_segmentId_values_import"] = "cost/v1/containers/{ContainerId}/templates/{TemplateId}/segments/{SegmentId}/values:import";
+            Urls["cost_segments_values_valueId"] = "cost/v1/containers/{ContainerId}/templates/{TemplateId}/segments/{SegmentId}/values/{ValueId}";
+
+
         }
 
         public IRestResponse ExecuteRequest(RestRequest req)

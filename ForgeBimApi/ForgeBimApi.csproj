@@ -65,6 +65,7 @@
   <ItemGroup>
     <Compile Include="ForgeBimApiWrappers\Authentication.cs" />
     <Compile Include="ForgeBimApiWrappers\AccountApi.cs" />
+    <Compile Include="ForgeBimApiWrappers\BimCostApi.cs" />
     <Compile Include="ForgeBimApiWrappers\BimProjectFoldersApi.cs" />
     <Compile Include="ForgeBimApiWrappers\HubsApi.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -74,11 +75,15 @@
     <Compile Include="Serialization\Attributes.cs" />
     <Compile Include="Serialization\Base.cs" />
     <Compile Include="Serialization\BimCompany.cs" />
+    <Compile Include="Serialization\DmProject.cs" />
     <Compile Include="Serialization\BimProject.cs" />
     <Compile Include="Serialization\Bucket.cs" />
     <Compile Include="Serialization\Buckets.cs" />
     <Compile Include="Serialization\BusinessUnit.cs" />
     <Compile Include="Serialization\Container.cs" />
+    <Compile Include="Serialization\CostSegment.cs" />
+    <Compile Include="Serialization\CostSegmentValue.cs" />
+    <Compile Include="Serialization\CostTemplate.cs" />
     <Compile Include="Serialization\Created.cs" />
     <Compile Include="Serialization\Data.cs" />
     <Compile Include="Serialization\Derivatives.cs" />
@@ -122,6 +127,7 @@
     <Compile Include="Serialization\ServiceActivationResponse.cs" />
     <Compile Include="Serialization\Services.cs" />
     <Compile Include="Serialization\ServiceActivation.cs" />
+    <Compile Include="Serialization\Cost.cs" />
     <Compile Include="Serialization\Storage.cs" />
     <Compile Include="Serialization\Target.cs" />
     <Compile Include="Serialization\Thumbnails.cs" />

@@ -31,8 +31,10 @@ namespace BimProjectSetupCommon
         public string ProjectUserFilePath { get; set; }
         public string CompanyFilePath { get; set; }
         public string AccountUserFilePath { get; set; }
+        public string CostSegmentFilePath { get; set; }
         public string ForgeClientId { get; private set; }
         public string ForgeClientSecret { get; private set; }
+        public string ForgeCallback { get; private set; }
         public string ForgeBimAccountId { get; private set; }
         public string BaseUrl { get; private set; }
         public char Separator
@@ -98,6 +100,7 @@ namespace BimProjectSetupCommon
         {
             ForgeClientId = Environment.GetEnvironmentVariable("FORGE_CLIENT_ID") ?? "your_client_id";
             ForgeClientSecret = Environment.GetEnvironmentVariable("FORGE_CLIENT_SECRET") ?? "your_client_secret";
+            ForgeCallback = Environment.GetEnvironmentVariable("FORGE_CALLBACK") ?? "your_callback";
             ForgeBimAccountId = Environment.GetEnvironmentVariable("FORGE_BIM_ACCOUNT_ID") ?? "your_account_id";
             Encoding = GetEncoding("UTF-8");
             TrialRun = false;
@@ -125,9 +128,17 @@ namespace BimProjectSetupCommon
                 {
                     options.ProjectUserFilePath = args[++i];
                 }
+                else if (arg.Equals("-pcs", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    options.CostSegmentFilePath = args[++i];
+                }
                 else if (arg.Equals("-c", StringComparison.InvariantCultureIgnoreCase))
                 {
                     options.ForgeClientId = args[++i];
+                }
+                else if (arg.Equals("-k", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    options.ForgeCallback = args[++i];
                 }
                 else if (arg.Equals("-s", StringComparison.InvariantCultureIgnoreCase))
                 {

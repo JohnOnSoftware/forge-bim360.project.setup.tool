@@ -33,7 +33,7 @@ using System.Reflection;
 namespace BimProjectSetupCommon
 {
     /// <summary>
-    /// Static class that controls and stores data from CSV file and BIM 360
+    /// Static class that controls and stores data from CSV file and BIM 360 
     /// </summary>
     internal static class DataController
     {
@@ -49,6 +49,7 @@ namespace BimProjectSetupCommon
         public static DataTable _projcetUserTable;
         public static DataTable _accountUserTable;
         public static DataTable _companyTable;
+        public static DataTable _costTemplateTable;
         #endregion
 
         #region Properties
@@ -104,6 +105,19 @@ namespace BimProjectSetupCommon
                 return _Hubs;
             }
         }
+        private static List<DmProject> _DmProjects = null;
+        public static List<DmProject> DmProjects
+        {
+            get
+            {
+                if(_DmProjects == null || _DmProjects.Count < 1)
+                {
+                    _DmProjects = GetDmProjects();
+                }
+                return _DmProjects;
+            }
+        }
+
         #endregion
 
         #region Methods
@@ -154,6 +168,14 @@ namespace BimProjectSetupCommon
             if (_Hubs == null || _Hubs.Count < 1)
             {
                 _Hubs = GetHubs();
+            }
+        }
+
+        internal static void InitializeDmProjects()
+        {
+            if (_DmProjects == null || _DmProjects.Count < 1)
+            {
+                _DmProjects = GetDmProjects();
             }
         }
         #endregion
@@ -425,6 +447,20 @@ namespace BimProjectSetupCommon
             IRestResponse response = _projectsApi.GetProject(projId);
             return HandleGetProjectResponse(response);
         }
+
+        private static List<DmProject> GetDmProjects()
+        { 
+            if( _options == null)
+            {
+                return null;
+            }
+            HubsApi _hubApi = new HubsApi(GetToken, _options);
+            List<DmProject> dmProjects = new List<DmProject>();
+            dmProjects = _hubApi.GetProjects();
+
+            return dmProjects;
+        }
+
         private static List<HqUser> GetAccountUsers()
         {
             if (_options == null)
@@ -485,6 +521,7 @@ namespace BimProjectSetupCommon
             List<Hub> result = HandleGetHubsResponse(response);
             return result;
         }
+
         public static List<IndustryRole> GetProjectRoles(string projId)
         {
             if (projId == null)

@@ -60,6 +60,30 @@ namespace Autodesk.Forge.BIM360
 
             return response;
         }
+        public List<DmProject> GetProjects()
+        {
+            var request = new RestRequest(Method.GET);
+            request.Resource = Urls["hubs_hubId_projects"];
+            string hubId = options.ForgeBimAccountId;
+            if (hubId.StartsWith("b.") == false)
+            {
+                hubId = "b." + hubId;
+            }
+            request.AddParameter("HubId", hubId, ParameterType.UrlSegment);
+            request.AddHeader("authorization", $"Bearer {Token}");
+            request.AddHeader("Cache-Control", "no-cache");
+
+            IRestResponse response = ExecuteRequest(request);
+            List<DmProject> dmProjects = null;
+            if (response.StatusCode == System.Net.HttpStatusCode.OK)
+            {
+                JsonSerializerSettings settings = new JsonSerializerSettings();
+                settings.NullValueHandling = NullValueHandling.Ignore;
+                JsonApiResponse<List<DmProject>> result = JsonConvert.DeserializeObject<JsonApiResponse<List<DmProject>>>(response.Content, settings);
+                dmProjects = result.data;
+            }
+            return dmProjects;
+        }
 
         public IRestResponse GetTopFolders(string projectId)
         {
