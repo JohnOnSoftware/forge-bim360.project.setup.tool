@@ -86,7 +86,7 @@ namespace Autodesk.BimProjectSetup
             if( options.CostSegmentFilePath != null)
             {
                 costProcess.initToken();
-                while (!CostWorkflow.TokenInitialized )
+                while (!costProcess.TokenInitialized )
                 {
                     Thread.Sleep(2000);
                 }

@@ -30,7 +30,7 @@ namespace BimProjectSetupCommon.Workflow
 {
     public class CostWorkflow : ThreeLeggedWorkflow
     {
-        private static BimCostApi _bimCostApi = null;
+        private BimCostApi _bimCostApi = null;
 
         private List<CostSegment> _costSegments = null;
 

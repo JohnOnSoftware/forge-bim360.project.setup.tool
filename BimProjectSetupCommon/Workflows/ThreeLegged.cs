@@ -24,36 +24,38 @@ using Autodesk.Forge;
 using System.Net;
 using Autodesk.Forge.Client;
 using System.Text;
+using System.Threading;
 
 namespace BimProjectSetupCommon.Workflow
 {
     public class ThreeLeggedWorkflow : BaseWorkflow
     {
-        private static bool           m_ThreeLeggedTokenInitialized = false;
-        private static ThreeLeggedApi m_threeLeggedApi = new ThreeLeggedApi();
-        private static string         s_token = null;
-        private static                DateTime s_dt;
+        private  bool           _threeLeggedTokenInitialized = false;
+        private  ThreeLeggedApi _threeLeggedApi = new ThreeLeggedApi();
+        private  string         _threeLeggedToken = null;
+        private  DateTime      _dt;
 
         // Declare a local web listener to wait for the oAuth callback on the local machine.
         // Please read this article to configure your local machine properly
         // http://stackoverflow.com/questions/4019466/httplistener-access-denied
         //   ex: netsh http add urlacl url=http://+:3006/oauth user=cyrille
         // Embedded webviews are strongly discouraged for oAuth - https://developers.google.com/identity/protocols/OAuth2InstalledApp
-        private static HttpListener m_httpListener = null;
+        private static HttpListener _httpListener = null;
 
-        public delegate void NewBearerDelegate(dynamic bearer);
-
-        private static Scope[] _scope = new Scope[] { Scope.DataRead, Scope.DataWrite };
+        private static readonly Scope[] _scope = new Scope[] { Scope.DataRead, Scope.DataWrite };
 
 
         public ThreeLeggedWorkflow(AppOptions options ) : base(options)
         {
-            m_ThreeLeggedTokenInitialized = false;
+            _threeLeggedTokenInitialized = false;
         }
 
-
+        /// <summary>
+        /// 
+        /// </summary>
         public void initToken()
         {
+            _threeLeggedTokenInitialized = false;
             try
             {
                 Log.Info($"Initialize web listerner to get 3 legged token");
@@ -64,14 +66,14 @@ namespace BimProjectSetupCommon.Workflow
                 }
 
                 // Initialize our web listerner
-                m_httpListener = new HttpListener();
-                m_httpListener.Prefixes.Add(_options.ForgeCallback.Replace("localhost", "+") + "/");
-                m_httpListener.Start();
+                _httpListener = new HttpListener();
+                _httpListener.Prefixes.Add(_options.ForgeCallback.Replace("localhost", "+") + "/");
+                _httpListener.Start();
                 //IAsyncResult result =_httpListener.BeginGetContext (new AsyncCallback (_3leggedAsyncWaitForCode), _httpListener) ;
-                IAsyncResult result = m_httpListener.BeginGetContext(_3leggedAsyncWaitForCode, new NewBearerDelegate(gotit));
+                IAsyncResult result = _httpListener.BeginGetContext(_3leggedAsyncWaitForCode, null );
 
                 // Generate a URL page that asks for permissions for the specified scopes, and call our default web browser.
-                string oauthUrl = m_threeLeggedApi.Authorize(_options.ForgeClientId, oAuthConstants.CODE, _options.ForgeCallback, _scope);
+                string oauthUrl = _threeLeggedApi.Authorize(_options.ForgeClientId, oAuthConstants.CODE, _options.ForgeCallback, _scope);
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(oauthUrl));
 
                 Log.Info($"Wait to get 3 legged token...");
@@ -87,7 +89,7 @@ namespace BimProjectSetupCommon.Workflow
         }
 
 
-        internal static async void _3leggedAsyncWaitForCode(IAsyncResult ar)
+        internal async void _3leggedAsyncWaitForCode(IAsyncResult ar)
         {
             try
             {
@@ -97,7 +99,7 @@ namespace BimProjectSetupCommon.Workflow
                 // Let's grab the code fron the URL and request or final access_token
 
                 //HttpListener listener =(HttpListener)result.AsyncState ;
-                var context = m_httpListener.EndGetContext(ar);
+                var context = _httpListener.EndGetContext(ar);
                 string code = context.Request.QueryString[oAuthConstants.CODE];
 
                 // The code is only to tell the user, he can close is web browser and return
@@ -117,63 +119,64 @@ namespace BimProjectSetupCommon.Workflow
                     // Call the asynchronous version of the 3-legged client with HTTP information
                     // HTTP information will help you to verify if the call was successful as well
                     // as read the HTTP transaction headers.
-                    ApiResponse<dynamic> bearer = await m_threeLeggedApi.GettokenAsyncWithHttpInfo(_options.ForgeClientId, _options.ForgeClientSecret, oAuthConstants.AUTHORIZATION_CODE, code, _options.ForgeCallback);
-                    //if ( bearer.StatusCode != 200 )
-                    //	throw new Exception ("Request failed! (with HTTP response " + bearer.StatusCode + ")") ;
+                    ApiResponse<dynamic> bearer = await _threeLeggedApi.GettokenAsyncWithHttpInfo(_options.ForgeClientId, _options.ForgeClientSecret, oAuthConstants.AUTHORIZATION_CODE, code, _options.ForgeCallback);
+                    if (bearer.StatusCode != 200 || bearer.Data == null)
+                    {
+                        Log.Error($"Failed to get the access token, Authentication failed!");
+                        return;
+                    }
 
-                    // The JSON response from the oAuth server is the Data variable and has been
-                    // already parsed into a DynamicDictionary object.
+                    // The call returned successfully and you got a valid access_token.
+                    _threeLeggedToken = bearer.Data.access_token;
+                    _dt = DateTime.Now;
 
-                    //string token =bearer.Data.token_type + " " + bearer.Data.access_token ;
-                    //DateTime dt =DateTime.Now ;
-                    //dt.AddSeconds (double.Parse (bearer.Data.expires_in.ToString ())) ;
+                    Log.Info($"You are logged in, 3 legged token is setup successfully.");
 
-                    ((NewBearerDelegate)ar.AsyncState)?.Invoke(bearer.Data);
+
                 }
                 else
                 {
                     Log.Warn($"Failed to get the authorization code");
-                    ((NewBearerDelegate)ar.AsyncState)?.Invoke(null);
                 }
             }
             catch (Exception ex)
             {
                 Log.Error(ex );
-                ((NewBearerDelegate)ar.AsyncState)?.Invoke(null);
             }
             finally
             {
                 Log.Info($"Stop web http server.");
-                m_httpListener.Stop();
+                _httpListener.Stop();
+                _threeLeggedTokenInitialized = true;
             }
         }
 
-
-        private static void gotit(dynamic bearer)
-        {
-            if (bearer == null)
-            {
-                Log.Error($"Failed to get the access token, Authentication failed!");
-                return;
-            }
-            // The call returned successfully and you got a valid access_token.
-            s_token = bearer.access_token;
-            s_dt = DateTime.Now;
-            s_dt.AddSeconds(double.Parse(bearer.expires_in.ToString()));
-            m_ThreeLeggedTokenInitialized = true;
-
-            Log.Info($"You are logged in, 3 legged token is setup successfully.");
-        }
-
+        /// <summary>
+        /// 
+        /// 
+        /// </summary>
+        /// <returns></returns>
         public new string GetToken()
         {
-            return s_token;
+            if (_threeLeggedToken == null || ((DateTime.Now - _dt) > TimeSpan.FromMinutes(30)))
+            {
+                initToken();
+                while( !TokenInitialized)
+                {
+                    Thread.Sleep(2000);
+                }
+                _dt = DateTime.Now;
+                return _threeLeggedToken;
+            }
+            else return _threeLeggedToken;
         }
 
-
-        public static bool TokenInitialized
+        /// <summary>
+        /// 
+        /// </summary>
+        public bool TokenInitialized
         {
-            get { return m_ThreeLeggedTokenInitialized; }
+            get { return _threeLeggedTokenInitialized; }
         }
     }
 }
