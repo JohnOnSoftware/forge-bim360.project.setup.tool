@@ -130,7 +130,7 @@ namespace Autodesk.Forge.BIM360
             Urls["cost_templates"] = "cost/v1/containers/{ContainerId}/templates";
             Urls["cost_segments"]  = "cost/v1/containers/{ContainerId}/templates/{TemplateId}/segments";
             Urls["cost_segments_segmentId"] = "cost/v1/containers/{ContainerId}/templates/{TemplateId}/segments/{SegmentId}";
-            Urls["cost_segments_segmentId_values"] = "cost/v1/containers/{ContainerId}/templates/{TemplateId}/segments/{SegmentId}/values";
+            Urls["cost_segments_segmentId_values"] = "cost/v1/containers/{ContainerId}/segments/{SegmentId}/values";
             Urls["cost_segments_segmentId_values_import"] = "cost/v1/containers/{ContainerId}/templates/{TemplateId}/segments/{SegmentId}/values:import";
             Urls["cost_segments_values_valueId"] = "cost/v1/containers/{ContainerId}/templates/{TemplateId}/segments/{SegmentId}/values/{ValueId}";
 

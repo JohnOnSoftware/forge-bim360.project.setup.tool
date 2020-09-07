@@ -101,6 +101,7 @@
     <Compile Include="Serialization\Item.cs" />
     <Compile Include="Serialization\ItemResponse.cs" />
     <Compile Include="Serialization\JsonApi.cs" />
+    <Compile Include="Serialization\CostResponse.cs" />
     <Compile Include="Serialization\JsonApiResponse.cs" />
     <Compile Include="Serialization\Link.cs" />
     <Compile Include="Serialization\Links.cs" />
@@ -108,6 +109,7 @@
     <Compile Include="Serialization\NestedFolder.cs" />
     <Compile Include="Serialization\Parent.cs" />
     <Compile Include="Serialization\Permission.cs" />
+    <Compile Include="Serialization\Pagination.cs" />
     <Compile Include="Serialization\Phone.cs" />
     <Compile Include="Serialization\Project.cs" />
     <Compile Include="Serialization\Projects.cs" />

@@ -32,6 +32,8 @@ namespace BimProjectSetupCommon
         public string CompanyFilePath { get; set; }
         public string AccountUserFilePath { get; set; }
         public string CostSegmentFilePath { get; set; }
+        public string CostSegmentValueFilePath { get; set; }
+        public string ModelSetFilePath { get; set; }
         public string ForgeClientId { get; private set; }
         public string ForgeClientSecret { get; private set; }
         public string ForgeCallback { get; private set; }
@@ -131,6 +133,14 @@ namespace BimProjectSetupCommon
                 else if (arg.Equals("-pcs", StringComparison.InvariantCultureIgnoreCase))
                 {
                     options.CostSegmentFilePath = args[++i];
+                }
+                else if (arg.Equals("-pcv", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    options.CostSegmentValueFilePath = args[++i];
+                }
+                else if(arg.Equals("-pms", StringComparison.InvariantCultureIgnoreCase))
+                {
+                    options.ModelSetFilePath = args[++i];
                 }
                 else if (arg.Equals("-c", StringComparison.InvariantCultureIgnoreCase))
                 {

@@ -49,7 +49,10 @@ namespace BimProjectSetupCommon
         public static DataTable _projcetUserTable;
         public static DataTable _accountUserTable;
         public static DataTable _companyTable;
-        public static DataTable _costTemplateTable;
+        public static DataTable _costSegmentTable;
+        public static DataTable _costSegmentValueTable;
+        public static DataTable _modelSetTable;
+
         #endregion
 
         #region Properties

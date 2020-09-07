@@ -94,18 +94,17 @@ namespace Autodesk.Forge.BIM360
             int limit = 100;
             Log.Info($"Querying Cost Budget Segments from project '{options.ForgeBimAccountId}'");
             result = new List<CostSegment>();
-            List<CostSegment> segments;
+            CostSegmentValuesResponse segmentsResponse = null;
             IRestResponse response = null;
             int offset = 0;
             do
             {
-                segments = null;
+                segmentsResponse = null;
                 try
                 {
                     var request = new RestRequest(Method.GET);
                     //request.Resource = "cost/v1/containers/{ContainerId}/templates/{TemplateId}/segments";
                     request.Resource = Urls["cost_segments"];
-                    //TBD: change to container id
                     request.AddParameter("ContainerId", costContainerId, ParameterType.UrlSegment);
                     request.AddParameter("TemplateId", templateId, ParameterType.UrlSegment);
 
@@ -119,8 +118,8 @@ namespace Autodesk.Forge.BIM360
                     {
                         JsonSerializerSettings settings = new JsonSerializerSettings();
                         settings.NullValueHandling = NullValueHandling.Ignore;
-                        segments = JsonConvert.DeserializeObject<List<CostSegment>>(response.Content, settings);
-                        result.AddRange(segments);
+                        segmentsResponse = JsonConvert.DeserializeObject<CostSegmentValuesResponse>(response.Content, settings);
+                        result.AddRange(segmentsResponse.results);
                         offset += limit;
                     }
                 }
@@ -130,7 +129,7 @@ namespace Autodesk.Forge.BIM360
                     throw ex;
                 }
             }
-            while (segments != null && segments.Count == limit);
+            while (segmentsResponse != null && segmentsResponse.results != null && segmentsResponse.results.Count == limit);
 
             return response;
 
@@ -248,8 +247,8 @@ namespace Autodesk.Forge.BIM360
         public IRestResponse PostBudgetCodeSegmentValue(string costContainerId, string templateId, string segmentId, CostSegmentValue segmentValue)
         {
             var request = new RestRequest(Method.POST);
-            //request.Resource = "cost/v1/containers/{ContainerId}/templates/{TemplateId}/segments/{SegmentId}/values";
-            request.Resource = Urls["cost_segment_values"];
+            //request.Resource = "cost/v1/containers/{ContainerId}/segments/{SegmentId}/values";
+            request.Resource = Urls["cost_segments_segmentId_values"];
             request.AddParameter("ContainerId", costContainerId, ParameterType.UrlSegment);
             request.AddParameter("TemplateId", templateId, ParameterType.UrlSegment);
             request.AddParameter("SegmentId", segmentId, ParameterType.UrlSegment);

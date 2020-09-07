@@ -30,6 +30,12 @@ namespace Autodesk.Forge.BIM360.Serialization
         [JsonProperty("id")]
         public string id { get; set; }
 
+        [JsonProperty("projectName")]
+        public string projectName { get; set; }
+
+        [JsonProperty("segmentName")]
+        public string segmentName { get; set; }
+
         [JsonProperty("code")]
         public string code { get; set; }
 
@@ -38,9 +44,6 @@ namespace Autodesk.Forge.BIM360.Serialization
 
         [JsonProperty("description")]
         public string description { get; set; }
-
-        [JsonProperty("segmentId")]
-        public string segmentId { get; set; }
 
         [JsonProperty("parentId")]
         public string parentId { get; set; }

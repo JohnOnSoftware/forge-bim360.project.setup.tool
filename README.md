@@ -93,6 +93,8 @@ Note: These template files used in the scripts are just samples which are define
     - -x Path to CSV input file for service activation
     - -u Path to CSV input file with project user information
     - -pcs Path to CSV input file with cost budget code segment information
+    - -pcv Path to CSV input file with cost segment value information
+    - -pms Path to CSV input file with model set information
     - -c Forge client ID
     - -s Forge client secret
     - -k Forge callback(Need to be same as in the Forge App)

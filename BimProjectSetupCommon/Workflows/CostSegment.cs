@@ -28,13 +28,13 @@ using Newtonsoft.Json;
 
 namespace BimProjectSetupCommon.Workflow
 {
-    public class CostWorkflow : ThreeLeggedWorkflow
+    public class CostSegmentWorkflow : ThreeLeggedWorkflow
     {
         private BimCostApi _bimCostApi = null;
 
         private List<CostSegment> _costSegments = null;
 
-        public CostWorkflow(AppOptions options ) : base(options)
+        public CostSegmentWorkflow(AppOptions options ) : base(options)
         {
             DataController.InitializeDmProjects();
         }
@@ -54,16 +54,16 @@ namespace BimProjectSetupCommon.Workflow
         /// Main method to setup cost template from excel file
         /// 
         /// </summary>
-        public void SetupCostTemplateFromCsvProcess()
+        public void SetupCostSegmentFromCsvProcess()
         {
             try
             {
-                DataController._costTemplateTable = CsvReader.ReadDataFromCSV( DataController._costTemplateTable, DataController._options.CostSegmentFilePath );
+                DataController._costSegmentTable = CsvReader.ReadDataFromCSV( DataController._costSegmentTable, DataController._options.CostSegmentFilePath );
                 Log.Info($"Read data from CSV file at {DataController._options.CostSegmentFilePath}");
                 if ( false == _options.TrialRun)
                 {
-                    _costSegments = GetCostSegmentsFromTable(DataController._costTemplateTable);
-                    SetupCostTemplate(_costSegments);
+                    _costSegments = GetCostSegmentsFromTable(DataController._costSegmentTable);
+                    SetupCostSegments(_costSegments);
                 }
                 else
                 {
@@ -141,7 +141,7 @@ namespace BimProjectSetupCommon.Workflow
         /// Setup Cost Template Segments with the segment list 
         /// </summary>
         /// <param name="segments"></param>
-        public void SetupCostTemplate( List<CostSegment> segments)
+        public void SetupCostSegments( List<CostSegment> segments)
         {
             if(segments == null || segments.Count == 0)
             {

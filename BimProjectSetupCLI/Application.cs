@@ -34,8 +34,10 @@ namespace Autodesk.BimProjectSetup
         private ProjectWorkflow projectProcess = null;
         private ServiceWorkflow serviceProcess = null;
         private AccountWorkflow accountProcess = null;
-        private ProjectUserWorkflow projectUserProcess = null;
-        private CostWorkflow costProcess = null;
+        private ProjectUserWorkflow         projectUserProcess = null;
+        private CostSegmentWorkflow         costSegmentProcess = null;
+        private CostSegmentValueWorkflow    costSegmentValueProcess = null;
+        private ModelCoordinationWorkflow   modelCoordinationProcess = null;
 
         public Application(AppOptions options)
         {
@@ -51,7 +53,9 @@ namespace Autodesk.BimProjectSetup
                 serviceProcess = new ServiceWorkflow(options);
                 accountProcess = new AccountWorkflow(options);
                 projectUserProcess = new ProjectUserWorkflow(options);
-                costProcess = new CostWorkflow(options);
+                costSegmentProcess = new CostSegmentWorkflow(options);
+                costSegmentValueProcess  = new CostSegmentValueWorkflow(options);
+                modelCoordinationProcess = new ModelCoordinationWorkflow(options);
 
                 result = true;
             }
@@ -85,13 +89,33 @@ namespace Autodesk.BimProjectSetup
             }
             if( options.CostSegmentFilePath != null)
             {
-                costProcess.initToken();
-                while (!costProcess.TokenInitialized )
+                costSegmentProcess.initToken();
+                while (!costSegmentProcess.TokenInitialized )
                 {
                     Thread.Sleep(2000);
                 }
-                costProcess.prepareData();
-                costProcess.SetupCostTemplateFromCsvProcess();
+                costSegmentProcess.prepareData();
+                costSegmentProcess.SetupCostSegmentFromCsvProcess();
+            }
+            if (options.CostSegmentValueFilePath != null)
+            {
+                costSegmentValueProcess.initToken();
+                while (!costSegmentValueProcess.TokenInitialized)
+                {
+                    Thread.Sleep(2000);
+                }
+                costSegmentValueProcess.prepareData();
+                costSegmentValueProcess.SetupCostSegmentValueFromCsvProcess();
+            }
+            if (options.ModelSetFilePath != null)
+            {
+                modelCoordinationProcess.initToken();
+                while (!modelCoordinationProcess.TokenInitialized)
+                {
+                    Thread.Sleep(2000);
+                }
+                modelCoordinationProcess.prepareData();
+                modelCoordinationProcess.SetupModelSetsFromCsvProcess();
             }
         }
         internal static void PrintHelp()
@@ -101,6 +125,8 @@ namespace Autodesk.BimProjectSetup
             Console.WriteLine("  -x        Path to CSV input file for service activation");
             Console.WriteLine("  -u        Path to CSV input file with project user information");
             Console.WriteLine("  -pcs      Path to CSV input file with cost budget code segments information");
+            Console.WriteLine("  -pcv      Path to CSV input file with cost segment values information");
+            Console.WriteLine("  -pcs      Path to CSV input file with model set information");
             Console.WriteLine("  -c        Forge client ID");
             Console.WriteLine("  -s        Forge client secret");
             Console.WriteLine("  -a        BIM 360 Account ID");

@@ -39,6 +39,15 @@
       <HintPath>..\packages\Autodesk.Forge.1.7.0\lib\net452\Autodesk.Forge.dll</HintPath>
       <Private>False</Private>
     </Reference>
+    <Reference Include="Autodesk.Forge.Bim360.ModelCoordination.Clash, Version=3.3.28.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autodesk.Forge.Bim360.ModelCoordination.Clash.3.3.28\lib\netstandard2.0\Autodesk.Forge.Bim360.ModelCoordination.Clash.dll</HintPath>
+    </Reference>
+    <Reference Include="Autodesk.Forge.Bim360.ModelCoordination.Index, Version=1.2.45.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autodesk.Forge.Bim360.ModelCoordination.Index.1.2.45\lib\netstandard2.0\Autodesk.Forge.Bim360.ModelCoordination.Index.dll</HintPath>
+    </Reference>
+    <Reference Include="Autodesk.Forge.Bim360.ModelCoordination.ModelSet, Version=3.0.66.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Autodesk.Forge.Bim360.ModelCoordination.ModelSet.3.0.66\lib\netstandard2.0\Autodesk.Forge.Bim360.ModelCoordination.ModelSet.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.12.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>False</Private>
@@ -52,6 +61,10 @@
       <Private>False</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.Annotations, Version=4.2.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.ComponentModel.Annotations.4.5.0\lib\net461\System.ComponentModel.Annotations.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.IO.Compression" />
@@ -79,9 +92,11 @@
     <Compile Include="Helpers\Util.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Workflows\Account.cs" />
+    <Compile Include="Workflows\CostSegmentValue.cs" />
+    <Compile Include="Workflows\ModelCoordination.cs" />
     <Compile Include="Workflows\ThreeLegged.cs" />
     <Compile Include="Workflows\Base.cs" />
-    <Compile Include="Workflows\Cost.cs" />
+    <Compile Include="Workflows\CostSegment.cs" />
     <Compile Include="Workflows\Folder.cs" />
     <Compile Include="Workflows\Project.cs" />
     <Compile Include="Workflows\ProjectUser.cs" />
