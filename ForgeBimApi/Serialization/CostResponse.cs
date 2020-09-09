@@ -26,10 +26,10 @@ using Autodesk.Forge.BIM360.Serialization;
 
 namespace Autodesk.Forge.BIM360.Serialization
 {
-    public class CostSegmentValuesResponse
+    public class CostItemsResponse<T>
     {
 
-        public List<CostSegment> results { get; set; }
+        public List<T> results { get; set; }
 
         public Pagination pagination { get; set; }
 

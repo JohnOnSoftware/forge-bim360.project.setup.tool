@@ -158,17 +158,17 @@ namespace BimProjectSetupCommon.Workflow
                 }
 
                 string costContainerId = dmProject.relationships.cost.data.id;
-                _bimCostApi.GetBudgetCodeTemplates(costContainerId, out List<CostTemplate> templates);
+                List<CostTemplate>  templates = _bimCostApi.GetBudgetCodeTemplates(costContainerId);
                 if (templates == null || templates.Count != 1)
                 {
                     Log.Warn("template of this project is not correct");
                     return;
                 }
 
-                IRestResponse res = _bimCostApi.GetBudgetCodeSegments(costContainerId, templates[0].id, out List<CostSegment> segments);
-                if(res.StatusCode != System.Net.HttpStatusCode.OK || segments.Count == 0)
+                List<CostSegment> segments = _bimCostApi.GetBudgetCodeSegments(costContainerId, templates[0].id);
+                if(segments == null )
                 {
-                    Log.Warn($"Failed to add segment code {segmentValue.code} to segment {segmentValue.segmentName}");
+                    Log.Warn($"Failed to get segments from template {templates[0].name}");
                     continue;
                 }
 
@@ -178,15 +178,15 @@ namespace BimProjectSetupCommon.Workflow
                     Log.Warn($"Failed to add segment code {segmentValue.code} to segment {segmentValue.segmentName}");
                     continue;
                 }
-                Log.Info($"Start to add segment values to segment: {segment.name}");
-                IRestResponse response = _bimCostApi.PostBudgetCodeSegmentValue(dmProject.relationships.cost.data.id, templates[0].id, segment.id, segmentValue);
-                if( response.StatusCode == System.Net.HttpStatusCode.Created)
+                Log.Info($"Start to add segment value {segmentValue.code} to segment: {segment.name}");
+                bool ret = _bimCostApi.PostBudgetCodeSegmentValue(dmProject.relationships.cost.data.id, templates[0].id, segment.id, segmentValue);
+                if( ret)
                 {
                     Log.Info($"Segment code {segmentValue.code} is created");
                 }
                 else
                 {
-                    Log.Error($"Segment code {segmentValue.code} failed to be created due to {response.ErrorMessage}");
+                    Log.Error($"Segment code {segmentValue.code} failed to be created");
                 }
             }
         }

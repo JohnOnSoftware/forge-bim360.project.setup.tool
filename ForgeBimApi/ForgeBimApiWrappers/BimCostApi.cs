@@ -50,12 +50,15 @@ namespace Autodesk.Forge.BIM360
 
         }
 
-
-        public IRestResponse GetBudgetCodeTemplates(string costContainerId, out List<CostTemplate> result)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="costContainerId"></param>
+        /// <returns></returns>
+        public List<CostTemplate> GetBudgetCodeTemplates(string costContainerId)
         {
             Log.Info($"Querying Cost Template from project '{options.ForgeBimAccountId}'");
-            result = new List<CostTemplate>();
-            IRestResponse response = null;
+            List<CostTemplate> result = null;
             try
             {
                 var request = new RestRequest(Method.GET);
@@ -64,23 +67,21 @@ namespace Autodesk.Forge.BIM360
                 request.AddParameter("ContainerId", costContainerId, ParameterType.UrlSegment);
                 request.AddHeader("authorization", $"Bearer {ThreeLeggedToken}");
 
-                response = ExecuteRequest(request);
+                 IRestResponse response = ExecuteRequest(request);
 
                 if (response.StatusCode == System.Net.HttpStatusCode.OK)
                 {
                     JsonSerializerSettings settings = new JsonSerializerSettings();
                     settings.NullValueHandling = NullValueHandling.Ignore;
-                    List<CostTemplate> templates = JsonConvert.DeserializeObject<List<CostTemplate>>(response.Content, settings);
-                    result.AddRange(templates);
+                    result = JsonConvert.DeserializeObject<List<CostTemplate>>(response.Content, settings);
                 }
             }
             catch (Exception ex)
             {
-                Log.Error(ex);
-                throw ex;
+                Log.Error($"Failed to get template from project {options.ForgeBimAccountId}");
+                return null;
             }
-
-            return response;
+            return result;
         }
 
        
@@ -89,13 +90,12 @@ namespace Autodesk.Forge.BIM360
         /// </summary>
         /// <param name="result"></param>
         /// <returns></returns>
-        public IRestResponse GetBudgetCodeSegments(string costContainerId, string templateId, out List<CostSegment> result)
+        public List<CostSegment> GetBudgetCodeSegments(string costContainerId, string templateId )
         {
             int limit = 100;
-            Log.Info($"Querying Cost Budget Segments from project '{options.ForgeBimAccountId}'");
-            result = new List<CostSegment>();
-            CostSegmentValuesResponse segmentsResponse = null;
-            IRestResponse response = null;
+            Log.Info($"Querying Cost Budget Segments from template '{templateId}'");
+            List<CostSegment>  result = new List<CostSegment>();
+            CostItemsResponse<CostSegment> segmentsResponse = null;
             int offset = 0;
             do
             {
@@ -112,33 +112,38 @@ namespace Autodesk.Forge.BIM360
                     request.AddParameter("limit", limit, ParameterType.QueryString);
                     request.AddParameter("offset", offset, ParameterType.QueryString);
 
-                    response = ExecuteRequest(request);
+                    IRestResponse response = ExecuteRequest(request);
 
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         JsonSerializerSettings settings = new JsonSerializerSettings();
                         settings.NullValueHandling = NullValueHandling.Ignore;
-                        segmentsResponse = JsonConvert.DeserializeObject<CostSegmentValuesResponse>(response.Content, settings);
+                        segmentsResponse = JsonConvert.DeserializeObject<CostItemsResponse<CostSegment>>(response.Content, settings);
                         result.AddRange(segmentsResponse.results);
                         offset += limit;
                     }
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex);
-                    throw ex;
+                    Log.Error($"Failed to get segments from template {templateId} due to {ex.Message}");
+                    return null;
                 }
-            }
-            while (segmentsResponse != null && segmentsResponse.results != null && segmentsResponse.results.Count == limit);
+            }while (segmentsResponse != null && segmentsResponse.results != null && segmentsResponse.results.Count == limit);
 
-            return response;
-
+            return (result.Count==0)? null: result;
         }
 
-        public IRestResponse GetBudgetCodeSegment(string costContainerId, string templateId, string segmentId)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="costContainerId"></param>
+        /// <param name="templateId"></param>
+        /// <param name="segmentId"></param>
+        /// <returns></returns>
+        public CostSegment GetBudgetCodeSegment(string costContainerId, string templateId, string segmentId )
         {
-            Log.Info($"Querying Projects from AccountID '{options.ForgeBimAccountId}'");
-            IRestResponse response = null;
+            Log.Info($"Querying segment details by the id of '{segmentId}'");
+            CostSegment segment = null;
             try
             {
                 var request = new RestRequest(Method.GET);
@@ -148,43 +153,62 @@ namespace Autodesk.Forge.BIM360
                 request.AddParameter("TemplateId", templateId, ParameterType.UrlSegment);
                 request.AddParameter("SegmentId", segmentId, ParameterType.UrlSegment);
                 request.AddHeader("authorization", $"Bearer {ThreeLeggedToken}");
-
-                response = ExecuteRequest(request);
+                IRestResponse response = ExecuteRequest(request);
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    JsonSerializerSettings settings = new JsonSerializerSettings();
+                    settings.NullValueHandling = NullValueHandling.Ignore;
+                    segment = JsonConvert.DeserializeObject<CostSegment>(response.Content, settings);
+                }
             }
             catch (Exception ex)
             {
-                Log.Error(ex);
-                throw ex;
+                Log.Error($"Failed to get segement detail from {segmentId} due to {ex.Message}");
+                return null;
             }
-
-            return response;
+            return segment;
         }
 
-        public IRestResponse PostBudgetCodeSegment(string costContainerId, string templateId, CostSegment segment)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="costContainerId"></param>
+        /// <param name="templateId"></param>
+        /// <param name="segment"></param>
+        /// <returns></returns>
+        public bool PostBudgetCodeSegment(string costContainerId, string templateId, CostSegment segment)
         {
             if( costContainerId == null || templateId == null || segment == null)
             {
                 Log.Error("The input paramter is null");
-                return null;
+                return false;
             }
+            IRestResponse response = null;
+            try
+            {
+                var request = new RestRequest(Method.POST);
+                //request.Resource = "hq/v1/accounts/{AccountId}/projects";
+                request.Resource = Urls["cost_segments"];
+                request.AddParameter("ContainerId", costContainerId, ParameterType.UrlSegment);
+                request.AddParameter("TemplateId", templateId, ParameterType.UrlSegment);
 
-            var request = new RestRequest(Method.POST);
-            //request.Resource = "hq/v1/accounts/{AccountId}/projects";
-            request.Resource = Urls["cost_segments"];
-            request.AddParameter("ContainerId", costContainerId, ParameterType.UrlSegment);
-            request.AddParameter("TemplateId", templateId, ParameterType.UrlSegment);
+                JsonSerializerSettings settings = new JsonSerializerSettings();
+                settings.DateFormatString = "yyyy-MM-dd";
+                settings.NullValueHandling = NullValueHandling.Ignore;
+                string segmentString = JsonConvert.SerializeObject(segment, settings);
+                request.AddParameter("application/json", segmentString, ParameterType.RequestBody);
 
-            JsonSerializerSettings settings = new JsonSerializerSettings();
-            settings.DateFormatString = "yyyy-MM-dd";
-            settings.NullValueHandling = NullValueHandling.Ignore;
-            string segmentString = JsonConvert.SerializeObject(segment, settings);
-            request.AddParameter("application/json", segmentString, ParameterType.RequestBody);
+                request.AddHeader("content-type", ContentType);
+                request.AddHeader("authorization", $"Bearer {ThreeLeggedToken}");
 
-            request.AddHeader("content-type", ContentType);
-            request.AddHeader("authorization", $"Bearer {ThreeLeggedToken}");
-
-            IRestResponse response = ExecuteRequest(request);
-            return response;
+                response = ExecuteRequest(request);
+            }
+            catch ( Exception ex)
+            {
+                Log.Error($"Segment {segment.name} failed to be created due to {ex.Message}");
+                return false;
+            }
+            return (response.StatusCode == System.Net.HttpStatusCode.Created) ? true : false;
         }
 
 
@@ -194,25 +218,22 @@ namespace Autodesk.Forge.BIM360
         /// <param name="costContainerId"></param>
         /// <param name="templateId"></param>
         /// <param name="segment"></param>
-        /// <param name="result"></param>
         /// <returns></returns>
-        public IRestResponse GetBudgetCodeSegmentValues(string costContainerId, string templateId, CostSegment segment, out List<CostSegmentValue> result)
+        public List<CostSegmentValue> GetBudgetCodeSegmentValues(string costContainerId, string templateId, CostSegment segment )
         {
             int limit = 100;
-            Log.Info($"Querying Cost Budget Segments from project '{options.ForgeBimAccountId}'");
-            result = new List<CostSegmentValue>();
-            List<CostSegmentValue> segmentValues;
-            IRestResponse response = null;
+            Log.Info($"Querying Cost budget segment values from segment '{segment.name}'");
+            List<CostSegmentValue> result = new List<CostSegmentValue>();
+            CostItemsResponse<CostSegmentValue> segmentValuesResponse;
             int offset = 0;
             do
             {
-                segmentValues = null;
+                segmentValuesResponse = null;
                 try
                 {
                     var request = new RestRequest(Method.GET);
                     //request.Resource = "cost/v1/containers/{ContainerId}/templates/{TemplateId}/segments/{SegmentId}/values";
                     request.Resource = Urls["cost_segments_segmentId_values"];
-                    //TBD: change to container id
                     request.AddParameter("ContainerId", costContainerId, ParameterType.UrlSegment);
                     request.AddParameter("TemplateId", templateId, ParameterType.UrlSegment);
                     request.AddParameter("SegmentId", segment, ParameterType.UrlSegment);
@@ -220,78 +241,101 @@ namespace Autodesk.Forge.BIM360
                     request.AddHeader("authorization", $"Bearer {ThreeLeggedToken}");
                     request.AddParameter("limit", limit, ParameterType.QueryString);
                     request.AddParameter("offset", offset, ParameterType.QueryString);
-
-                    response = ExecuteRequest(request);
+                    IRestResponse response = ExecuteRequest(request);
 
                     if (response.StatusCode == System.Net.HttpStatusCode.OK)
                     {
                         JsonSerializerSettings settings = new JsonSerializerSettings();
                         settings.NullValueHandling = NullValueHandling.Ignore;
-                        segmentValues = JsonConvert.DeserializeObject<List<CostSegmentValue>>(response.Content, settings);
-                        result.AddRange(segmentValues);
+                        segmentValuesResponse = JsonConvert.DeserializeObject<CostItemsResponse<CostSegmentValue>>(response.Content, settings);
+                        result.AddRange(segmentValuesResponse.results);
                         offset += limit;
                     }
                 }
                 catch (Exception ex)
                 {
-                    Log.Error(ex);
-                    throw ex;
+                    Log.Error($"Failed to get values from Segment {segment.name} due to {ex.Message}");
+                    return null;
                 }
+            }while (segmentValuesResponse != null && segmentValuesResponse.results !=null && segmentValuesResponse.results.Count == limit);
+
+            return (result.Count == 0)? null : result;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="costContainerId"></param>
+        /// <param name="templateId"></param>
+        /// <param name="segmentId"></param>
+        /// <param name="segmentValue"></param>
+        /// <returns></returns>
+        public bool PostBudgetCodeSegmentValue(string costContainerId, string templateId, string segmentId, CostSegmentValue segmentValue)
+        {
+            IRestResponse response = null;
+            try
+            {
+                var request = new RestRequest(Method.POST);
+                //request.Resource = "cost/v1/containers/{ContainerId}/segments/{SegmentId}/values";
+                request.Resource = Urls["cost_segments_segmentId_values"];
+                request.AddParameter("ContainerId", costContainerId, ParameterType.UrlSegment);
+                request.AddParameter("TemplateId", templateId, ParameterType.UrlSegment);
+                request.AddParameter("SegmentId", segmentId, ParameterType.UrlSegment);
+
+                JsonSerializerSettings settings = new JsonSerializerSettings();
+                settings.DateFormatString = "yyyy-MM-dd";
+                settings.NullValueHandling = NullValueHandling.Ignore;
+                string segmentValueString = JsonConvert.SerializeObject(segmentValue, settings);
+                request.AddParameter("application/json", segmentValueString, ParameterType.RequestBody);
+
+                request.AddHeader("content-type", ContentType);
+                request.AddHeader("authorization", $"Bearer {ThreeLeggedToken}");
+
+                response = ExecuteRequest(request);
             }
-            while (segmentValues != null && segmentValues.Count == limit);
-
-            return response;
-
+            catch (Exception ex)
+            {
+                Log.Error($"Failed to create value for segment {segmentId} due to {ex.Message}");
+                return false;
+            }
+            return (response.StatusCode == System.Net.HttpStatusCode.Created) ? true : false;
         }
 
-        public IRestResponse PostBudgetCodeSegmentValue(string costContainerId, string templateId, string segmentId, CostSegmentValue segmentValue)
+        public bool PostBudgetCodeSegmentValuesImport(string costContainerId, string templateId, string segmentId, List<CostSegmentValue> segmentValues)
         {
-            var request = new RestRequest(Method.POST);
-            //request.Resource = "cost/v1/containers/{ContainerId}/segments/{SegmentId}/values";
-            request.Resource = Urls["cost_segments_segmentId_values"];
-            request.AddParameter("ContainerId", costContainerId, ParameterType.UrlSegment);
-            request.AddParameter("TemplateId", templateId, ParameterType.UrlSegment);
-            request.AddParameter("SegmentId", segmentId, ParameterType.UrlSegment);
+            IRestResponse response = null;
+            try
+            {
+                var request = new RestRequest(Method.POST);
+                //request.Resource = "cost/v1/containers/{ContainerId}/templates/{TemplateId}/segments/{SegmentId}/values:import";
+                request.Resource = Urls["cost_segments_segmentId_values_import"];
+                request.AddParameter("ContainerId", costContainerId, ParameterType.UrlSegment);
+                request.AddParameter("TemplateId", templateId, ParameterType.UrlSegment);
+                request.AddParameter("SegmentId", segmentId, ParameterType.UrlSegment);
 
-            JsonSerializerSettings settings = new JsonSerializerSettings();
-            settings.DateFormatString = "yyyy-MM-dd";
-            settings.NullValueHandling = NullValueHandling.Ignore;
-            string segmentValueString = JsonConvert.SerializeObject(segmentValue, settings);
-            request.AddParameter("application/json", segmentValueString, ParameterType.RequestBody);
+                JsonSerializerSettings settings = new JsonSerializerSettings();
+                settings.DateFormatString = "yyyy-MM-dd";
+                settings.NullValueHandling = NullValueHandling.Ignore;
+                string segmentValueString = JsonConvert.SerializeObject(segmentValues, settings);
+                request.AddParameter("application/json", segmentValueString, ParameterType.RequestBody);
 
-            request.AddHeader("content-type", ContentType);
-            request.AddHeader("authorization", $"Bearer {ThreeLeggedToken}");
+                request.AddHeader("content-type", ContentType);
+                request.AddHeader("authorization", $"Bearer {ThreeLeggedToken}");
 
-            IRestResponse response = ExecuteRequest(request);
-            return response;
+                response = ExecuteRequest(request);
+            }
+            catch ( Exception ex)
+            {
+                Log.Error($"Failed to import values for segment {segmentId} due to {ex.Message}");
+                return false;
+            }
+            return (response.StatusCode == System.Net.HttpStatusCode.OK) ? true : false;
         }
 
-        public IRestResponse PostBudgetCodeSegmentValuesImport(string costContainerId, string templateId, string segmentId, List<CostSegmentValue> segmentValues)
-        {
-            var request = new RestRequest(Method.POST);
-            //request.Resource = "cost/v1/containers/{ContainerId}/templates/{TemplateId}/segments/{SegmentId}/values:import";
-            request.Resource = Urls["cost_segments_segmentId_values_import"];
-            request.AddParameter("ContainerId", costContainerId, ParameterType.UrlSegment);
-            request.AddParameter("TemplateId", templateId, ParameterType.UrlSegment);
-            request.AddParameter("SegmentId", segmentId, ParameterType.UrlSegment);
-
-            JsonSerializerSettings settings = new JsonSerializerSettings();
-            settings.DateFormatString = "yyyy-MM-dd";
-            settings.NullValueHandling = NullValueHandling.Ignore;
-            string segmentValueString = JsonConvert.SerializeObject(segmentValues, settings);
-            request.AddParameter("application/json", segmentValueString, ParameterType.RequestBody);
-
-            request.AddHeader("content-type", ContentType);
-            request.AddHeader("authorization", $"Bearer {ThreeLeggedToken}");
-
-            IRestResponse response = ExecuteRequest(request);
-            return response;
-        }
-
-        public IRestResponse GetBudgetCodeSegmentValue(string costContainerId, string templateId, string segmentId, string valueId)
+        public CostSegmentValue GetBudgetCodeSegmentValue(string costContainerId, string templateId, string segmentId, string valueId)
         {
             Log.Info($"Querying Projects from AccountID '{options.ForgeBimAccountId}'");
-            IRestResponse response = null;
+            CostSegmentValue segmentValue = null;
             try
             {
                 var request = new RestRequest(Method.GET);
@@ -303,15 +347,22 @@ namespace Autodesk.Forge.BIM360
                 request.AddParameter("ValueId", valueId, ParameterType.UrlSegment);
                 request.AddHeader("authorization", $"Bearer {ThreeLeggedToken}");
 
-                response = ExecuteRequest(request);
+                IRestResponse response = ExecuteRequest(request);
+                if (response.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    JsonSerializerSettings settings = new JsonSerializerSettings();
+                    settings.NullValueHandling = NullValueHandling.Ignore;
+                    segmentValue = JsonConvert.DeserializeObject<CostSegmentValue>(response.Content, settings);
+                }
+
             }
             catch (Exception ex)
             {
-                Log.Error(ex);
-                throw ex;
+                Log.Error($"Failed to get segement value detail from {valueId} due to {ex.Message}");
+                return null;
             }
 
-            return response;
+            return segmentValue;
         }
 
     }

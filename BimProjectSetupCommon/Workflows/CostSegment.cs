@@ -92,7 +92,6 @@ namespace BimProjectSetupCommon.Workflow
             view.Sort = "project_name desc";
             DataTable sorted = view.ToTable();
 
-            //List<ProjectUser> users = new List<ProjectUser>();
             List<CostSegment> segments = new List<CostSegment>();
             int i = 0;
 
@@ -132,8 +131,6 @@ namespace BimProjectSetupCommon.Workflow
             segment.length = Int32.Parse( Util.GetStringOrNull(row["length"]) );
             segment.type = Util.GetStringOrNull(row["type"]);
             segment.sampleCode = Util.GetStringOrNull(row["sample_code"]);
-            //AddServices(segment);
-
             return segment;
         }
 
@@ -162,23 +159,21 @@ namespace BimProjectSetupCommon.Workflow
                 }
 
                 string costContainerId = dmProject.relationships.cost.data.id;
-                _bimCostApi.GetBudgetCodeTemplates(costContainerId, out List<CostTemplate> templates);
+                List<CostTemplate> templates = _bimCostApi.GetBudgetCodeTemplates(costContainerId );
                 if (templates == null || templates.Count != 1)
                 {
                     Log.Warn("template of this project is not correct");
                     return;
                 }
-                Log.Info($"Start to add segments to budget code teamplate: {costContainerId}");
-
-                Log.Info($"- add segment to template ");
-                IRestResponse response = _bimCostApi.PostBudgetCodeSegment(dmProject.relationships.cost.data.id, templates[0].id, segment);
-                if( response.StatusCode == System.Net.HttpStatusCode.Created)
+                Log.Info($"Start to add segment {segment.name} to budget code teamplate: {templates[0].id}");
+                bool ret = _bimCostApi.PostBudgetCodeSegment(dmProject.relationships.cost.data.id, templates[0].id, segment);
+                if(ret)
                 {
                     Log.Info($"Segment {segment.name} is created");
                 }
                 else
                 {
-                    Log.Error($"Segment {segment.name} failed to be created due to {response.ErrorMessage}");
+                    Log.Error($"Segment {segment.name} failed to be created.");
                 }
             }
         }
